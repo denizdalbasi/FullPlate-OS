@@ -86,6 +86,10 @@ def init_db():
     print("Database initialized (and persisted) successfully.")
 
 # side functions
+def slow_print(text, delay=0.8):
+    print(text)
+    time.sleep(delay)
+
 def waste_management(items):
     # Check if the input is a list or just a single string
     if isinstance(items, list):
@@ -134,47 +138,40 @@ def temizle(urun_listesi):
 
 
 def check_multiple_ingredients(conn, item_list):
-
-    print(f"--- Inventory Check Started for {len(item_list)} items ---")
-
-
+    slow_print("--- Automatic Restocking System Active ---")
     cursor = conn.cursor()
 
     for item_name in item_list:
+        # join with recipe_amounts to see exactly what the recipe requires
         cursor.execute('''
-            SELECT stock_count, critical_count FROM ingredient_list 
-            WHERE item = ?
+            SELECT il.stock_count, il.critical_count, ra.required_amount 
+            FROM ingredient_list il
+            JOIN recipe_amounts ra ON il.item = ra.item
+            WHERE il.item = ?
         ''', (item_name,))
-        result = cursor.fetchone()
 
+        result = cursor.fetchone()
         if not result:
-            print(f"  [!] {item_name} not found in database. Skipping.")
             continue
 
-        stock_count, critical_count = result
+        stock, critical, recipe_need = result
 
-        if stock_count < critical_count:
+        # If stock is below critical OR below what the recipe needs
+        if stock < critical or stock < recipe_need:
+            new_stock = recipe_need + (critical * 2)
 
-            # 1. Calculate the required amount
-            deficit = stock_count - critical_count
-            print(f"  [-] {item_name} is LOW ({stock_count}/{critical_count}). Deficit: {abs(deficit)}")
-
-
-            # 3. UPDATE DB: stock_count + (3 * critical_count)
-            new_stock = stock_count + (3 * critical_count)
             cursor.execute('''
                 UPDATE ingredient_list 
                 SET stock_count = ? 
                 WHERE item = ?
             ''', (new_stock, item_name))
+
+            slow_print(f"   [Auto-Buy] {item_name} was low ({stock}). Restocked to {new_stock}.")
         else:
-            print(f"  [+] {item_name} stock is sufficient.")
+            print(f"   [+] {item_name} stock is sufficient ({stock}).")
 
-    # Finalize all updates at once
     conn.commit()
-    print("--- Inventory Check Complete (End) ---")
-
-
+    slow_print("--- Inventory Check Complete ---")
 
 def buy_tool(tool_name):
 
@@ -203,15 +200,13 @@ def check_multiple_tools(conn,tool_list):
 
         # Is the main tool available?
         if status_main == 'mevcut':
-            # Evet (Yes) -> End
             print(f"   [+] {item} is available.")
         else:
-            # Decision 2: Is the alternative available?
+            # Is the alternative available?
             if status_extra == 'mevcut':
                 # Yes -> End
                 print(f"   [+] {item} missing, but alternative ({extra}) is available.")
             else:
-                # No
                 print(f"   [-] Neither {item} nor {extra} are available!")
 
                 #Buy the tool
@@ -270,28 +265,30 @@ def is_inventory_sufficient(conn, item_list):
 
 
 def preperation(conn):
-    print("\n--- Starting Preparation Process (Hazirlik Sureci) ---")
+    slow_print("\n--- Starting Preparation Process ---")
     ingredients_to_check = ["Tomato", "Pepper", "Egg", "Onion"]
 
-    # STEP 1: Tools Check (Standard)
+    # STEP 1: Kitchen Tools Check
     check_multiple_tools(conn, ["spatula", "tava", "kesme tahtasi", "kase"])
 
-    # STEP 2: Automatic Restock (The "Shopping" phase)
-    # This MUST come before the sufficiency check
+    # STEP 2: AUTOMATIC RESTOCK
+    slow_print("Checking pantry and automatically restocking if necessary...")
     check_multiple_ingredients(conn, ingredients_to_check)
 
-    # STEP 3: Sufficiency Check (The "Do I have enough for the recipe?" phase)
+    # STEP 3: Sufficiency Check
+    # Now that we've tried to buy more, do we have enough for the recipe?
     missing = is_inventory_sufficient(conn, ingredients_to_check)
 
     if missing:
-        print("\n CANNOT START COOKING: Insufficient Ingredients!")
+        # If it's still missing, it means the restock logic didn't buy enough
+        # or the item isn't in the database correctly.
+        print("\n[!] CRITICAL ERROR: Even after restocking, we are missing supplies!")
         for m in missing:
             print(f"   - {m}")
-        print("Please check your database seeding values.")
         return False
 
-    # STEP 4: Physical Prep (Peeling, Dicing, Cracking)
-    print("[Pepper] Cutting 1cm from top, slicing length-wise, and dicing...")
+    # STEP 4: Physical Prep (Only happens if the above passed)
+    slow_print("[Pepper] Dicing peppers...")
     waste_management(["seeds", "white membranes"])
 
     has_skin = input("Is the tomato peelable/has skin? (yes/no): ").lower().strip()
@@ -388,51 +385,61 @@ def cooking(conn):
 
     print("Turning off the stove.")
 
-    # 8. Clean up
-    dirty_items = [
-        {'name': 'Tava', 'type': 'mutfak gereci'},
-        {'name': 'Spatula', 'type': 'mutfak gereci'}
-    ]
-    temizle(dirty_items)
-
     print("--- Cooking Process Complete (End) ---")
 
 
-def feedback_process(conn, user_name):
-    print(f"\n--- Feedback System for {user_name} ---")
+def get_valid_input(prompt, validation_type):
+    while True:
+        answer = input(prompt).strip().lower()
 
+        if validation_type == "1-10":
+            if answer.isdigit() and 1 <= int(answer) <= 10:
+                return answer
+            print("   [!] Invalid input. Please enter a number between 1 and 10.")
+
+        elif validation_type == "level":
+            if answer in ["low", "normal", "high"]:
+                return answer
+            print("   [!] Invalid input. Please type 'low', 'normal', or 'high'.")
+
+        elif validation_type == "yes_no":
+            if answer in ["yes", "no"]:
+                return answer
+            print("   [!] Invalid input. Please type 'yes' or 'no'.")
+
+        elif validation_type == "text":
+            if answer:
+                return answer
+            print("   [!] Input cannot be empty.")
+
+
+def feedback_process(conn, user_name):
+    slow_print(f"\n--- Feedback System for {user_name} ---")
+
+    # Mapping questions to their specific validation types
     questions = [
-        "1. Taste Score (1-10): ",
-        "2. Salt Level (Low/Normal/High): ",
-        "3. Cooking Consistency (Soggy/Dry): ",
-        "4. Visual Appeal Score (1-10): ",
-        "5. Freshness of Ingredients (Yes/No): ",
-        "6. Recommendation Likelihood (Yes/No): ",
-        "7. New Requests (Extra cheese, onion, etc.): "
+        ("1. Taste Score (1-10): ", "1-10"),
+        ("2. Salt Level (Low/Normal/High): ", "level"),
+        ("3. Cooking Consistency (Soggy/Dry): ", "text"),
+        ("4. Visual Appeal Score (1-10): ", "1-10"),
+        ("5. Freshness of Ingredients (Yes/No): ", "yes_no"),
+        ("6. Recommendation Likelihood (Yes/No): ", "yes_no"),
+        ("7. New Requests (Extra cheese, etc.): ", "text")
     ]
 
-    responses = {}
-
     cursor = conn.cursor()
+    # Ensure table exists
+    cursor.execute("CREATE TABLE IF NOT EXISTS feedback (user TEXT, q_id TEXT, ans TEXT)")
 
-    for i, q in enumerate(questions, 1):
-        answer = input(q)
-        responses[f"q{i}"] = answer
+    for i, (q_text, v_type) in enumerate(questions, 1):
+        valid_ans = get_valid_input(q_text, v_type)
 
-        # Is there a response?
-        # positive -> save to 'feedback' table; negative -> save to 'errors'
-        if answer.strip():
-            # Simulated DB Table: feedback (username, question_id, response)
-            cursor.execute("CREATE TABLE IF NOT EXISTS feedback (user TEXT, q_id TEXT, ans TEXT)")
-            cursor.execute("INSERT INTO feedback VALUES (?, ?, ?)", (user_name, f"q{i}", answer))
-        else:
-            # Simulated DB Table: error_logs
-            cursor.execute("CREATE TABLE IF NOT EXISTS error_logs (user TEXT, q_id TEXT, status TEXT)")
-            cursor.execute("INSERT INTO error_logs VALUES (?, ?, ?)", (user_name, f"q{i}", "no_response"))
-
+        cursor.execute(
+            "INSERT INTO feedback (user, q_id, ans) VALUES (?, ?, ?)",
+            (user_name, f"q{i}", valid_ans)
+        )
     conn.commit()
-    print("Feedback successfully saved to database. Thank you!")
-
+    slow_print("Feedback successfully saved to the database. Thank you!")
 
 def serve(conn):
     print("\n--- Starting Service (Servis) ---")
@@ -441,7 +448,6 @@ def serve(conn):
     print("Plating the Menemen...")
 
     # 2. Accompaniments
-
     cursor = conn.cursor()
 
     add_sides = input("Would you like side items (Bread, Tea, Cheese)? (yes/no): ").lower().strip()
@@ -451,7 +457,6 @@ def serve(conn):
         for side, count, unit in sides:
             if count > 0:
                 print(f"   [Adding Side] {side} ({count} {unit} available)")
-                # Update DB: stock - 1
                 cursor.execute("UPDATE yaninda SET eldeki_sayi = eldeki_sayi - 1 WHERE urun = ?", (side,))
 
     conn.commit()
@@ -461,13 +466,19 @@ def serve(conn):
     feedback_process(conn, user_name)
 
     # 4. Final Cleaning
-    print("\nClearing the table...")
-    items_to_clean = ["plate", "fork", "knife", "pan", "glass"]
-    temizle([{'name': item, 'type': 'mutfak gereci'} for item in items_to_clean])
+    print("\n--- Final Kitchen Cleanup ---")
+    items_to_clean = [
+        {'name': 'plate', 'type': 'mutfak gereci'},
+        {'name': 'fork', 'type': 'mutfak gereci'},
+        {'name': 'knife', 'type': 'mutfak gereci'},
+        {'name': 'glass', 'type': 'mutfak gereci'},
+        {'name': 'Tava (Pan)', 'type': 'mutfak gereci'},
+        {'name': 'Spatula', 'type': 'mutfak gereci'}
+    ]
+
+    temizle(items_to_clean)
 
     print("--- Service Process Complete (End) ---")
-
-
 if __name__ == "__main__":
     init_db()
     main_conn = sqlite3.connect('kitchen.db')
