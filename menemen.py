@@ -301,13 +301,7 @@ def check_sides_stock(conn):
 def preperation(conn):
     global needs_onion
 
-    answer = input("Do you want to include onions? (yes/no): ").lower().strip()
-    if answer == "yes":
-        needs_onion = True
-        print("[Onion] Peeling and dicing...")
-        waste_management("onion skins")
-    else:
-        needs_onion = False
+    needs_onion = input("Do you want to include onions? (yes/no): ").lower().strip()
 
     slow_print("\n--- Starting Preparation Process ---")
     ingredients_to_check = ["Tomato", "Pepper", "Egg", "Onion"]
