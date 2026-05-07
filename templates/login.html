@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 400px; margin-top: 50px;">
+    <h2 style="text-align: center;">Manager Access</h2>
+    <form action="{{ url_for('login') }}" method="POST">
+        <div style="margin-bottom: 15px;">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" style="width: 100%; padding: 8px;" required>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" style="width: 100%; padding: 8px;" required>
+        </div>
+        <button type="submit" class="btn" style="width: 100%; background-color: #e67e22;">Sign In</button>
+    </form>
+</div>
+{% endblock %}

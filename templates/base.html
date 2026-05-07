@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menemen Simulator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Combined Navigation Bar at the top -->
+    <nav style="background-color: #e67e22; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <!-- Logo/Title linked to Home -->
+        <h1 style="margin: 0; flex-grow: 1; text-align: center;">
+            <a href="{{ url_for('index') }}" style="color: white; text-decoration: none;"> Kitchen Dashboard</a>
+        </h1>
+        
+        <!-- Navigation Links -->
+        <div style="position: absolute; right: 20px;">
+            {% if session.get('logged_in') %}
+                <a href="{{ url_for('manager_dashboard') }}" style="color: white; margin-right: 15px; text-decoration: none; font-weight: bold;">Manager Panel</a>
+                <a href="{{ url_for('logout') }}" style="color: #ffdada; text-decoration: none;">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" style="color: white; text-decoration: none; font-weight: bold;">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

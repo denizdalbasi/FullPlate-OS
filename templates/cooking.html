@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Cooking Phase </h2>
+    
+    <div class="progress-container" style="width: 100%; background: #eee; border-radius: 10px; margin-bottom: 20px;">
+        <div class="progress-bar" style="width: {{ (session['step'] / 5) * 100 }}%; background: #27ae60; height: 10px; border-radius: 10px; transition: width 0.5s;"></div>
+    </div>
+
+    <div class="status-box">
+        <p><strong>Step {{ session['step'] }} of 5:</strong></p>
+        <p style="font-size: 1.4rem; color: #d35400;">{{ step_text }}</p>
+    </div>
+
+    <div class="cooking-animation" style="font-size: 3rem; margin: 20px 0;">
+        {% if session['step'] == 1 %}{% elif session['step'] == 2 %}{% elif session['step'] == 3 %}{% elif session['step'] == 4 %}{% else %}{% endif %}
+    </div>
+
+    <form method="POST">
+        {% if session['step'] < 5 %}
+            <button type="submit" class="btn">Next Step →</button>
+        {% else %}
+            <button type="submit" class="btn" style="background-color: #e67e22;">Finish Cooking & Serve!</button>
+        {% endif %}
+    </form>
+
+    <div style="margin-top: 20px; font-size: 0.8rem; color: #888;">
+        <p>Kitchen is heating up... Watch the pan carefully!</p>
+    </div>
+{% endblock %}

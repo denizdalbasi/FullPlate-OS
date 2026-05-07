@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Afiyet Olsun! (Enjoy Your Meal) </h2>
+    
+    <div class="status-box">
+        The Menemen is ready and smells amazing! 
+    </div>
+
+    <section style="text-align: left; margin: 20px 0;">
+        <h3>Accompaniments:</h3>
+        <ul>
+            <li> Fresh Sourdough Bread</li>
+            <li> Hot Turkish Tea</li>
+            <li> Feta Cheese on the side</li>
+        </ul>
+    </section>
+
+    <div class="info-note" style="font-style: italic; color: #666; margin-bottom: 20px;">
+        <p>Kitchen Note: All tools have been cleaned and waste has been managed.</p>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('feedback') }}" class="btn">Finish & Leave Feedback</a>
+    </div>
+{% endblock %}

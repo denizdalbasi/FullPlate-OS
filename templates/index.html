@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #e67e22; margin-bottom: 30px;">Welcome to the Menemen Station</h2>
+
+
+    <div class="chef-note">
+        <p style="text-align: center; margin-bottom: 15px;">
+            <strong>Chef's Note:</strong> The stove is preheated. Ready to start?
+        </p>
+        <div style="text-align: center; display: flex; justify-content: center; gap: 15px;">
+            <a href="{{ url_for('preparation') }}" class="btn">Start New Batch</a>
+        </div>
+    </div>
+	
+{% endblock %}

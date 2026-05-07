@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px;"> Managerial Overview</h2>
+
+    <!-- Financial Summary Cards -->
+    <div class="inventory-grid">
+        <div class="ingredient-card" style="border-top: 5px solid #27ae60;">
+            <small>Total Revenue</small>
+            <span class="stock-num" style="color: #27ae60;">${{ "%.2f"|format(finances['total_revenue']) }}</span>
+        </div>
+        <div class="ingredient-card" style="border-top: 5px solid #e74c3c;">
+            <small>Total Expenses</small>
+            <span class="stock-num" style="color: #e74c3c;">${{ "%.2f"|format(finances['total_costs']) }}</span>
+        </div>
+        <div class="ingredient-card" style="border-top: 5px solid #2980b9;">
+            <small>Net Profit</small>
+            <span class="stock-num" style="color: #2980b9;">${{ "%.2f"|format(finances['profit']) }}</span>
+        </div>
+    </div>
+
+    <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ddd;">
+
+    <!-- Live Inventory Status -->
+    <h3> Inventory Status</h3>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+    <thead>
+        <tr style="background-color: #f8f9fa; text-align: left;">
+            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Ingredient</th>
+            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Stock Level</th>
+            <th style="padding: 12px; border-bottom: 2px solid #dee2e6;">Unit</th>
+            <th style="padding: 12px; border-bottom: 2px solid #dee2e6; text-align: center;">Quick Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in ingredients %}
+        <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #eee;">{{ item['item'] }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; color: {{ '#e74c3c' if item['stock_count'] < 5 else '#2c3e50' }};">
+                {{ item['stock_count'] }}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; color: #7f8c8d;">{{ item['units'] }}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                <!-- Small button to restock just this item -->
+                <form action="{{ url_for('restock_item', item_name=item['item']) }}" method="POST" style="display: inline;">
+                    <button type="submit" style="background-color: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                        +10 Refill
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h3 style="margin-top: 30px;">Recent Activity Logs</h3>
+<div class="log-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; background: white;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead style="position: sticky; top: 0; background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+            <tr>
+                <th style="padding: 12px; text-align: left;">Activity</th>
+                <th style="padding: 12px; text-align: left;">Amount</th>
+                <th style="padding: 12px; text-align: left;">Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px;">{{ log['activity_text'] }}</td>
+                <td style="padding: 12px; font-weight: bold; color: {% if log['type'] == 'sale' %}#27ae60{% else %}#e74c3c{% endif %};">
+                    {{ "+" if log['type'] == 'sale' else "-" }}${{ "%.2f"|format(log['amount']) }}
+                </td>
+                <td style="padding: 12px; color: #7f8c8d; font-size: 0.85rem;">
+                    {{ log['timestamp'] }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" style="padding: 20px; text-align: center; color: #95a5a6;">No logs found yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<hr>
+<hr>
+<hr>
+<h3>Customer Feedback Archive</h3>
+<div class="feedback-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: white;">
+    {% if feedbacks %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #333; color: white;">
+                    <th style="padding: 10px; text-align: left;">Customer</th>
+                    <th style="padding: 10px; text-align: left;">Answers (Combined)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user, combined_answers in feedbacks.items() %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;"><strong>{{ user }}</strong></td>
+                    <td style="padding: 10px; color: #555;">{{ combined_answers }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="padding: 20px; text-align: center; color: #7f8c8d;">No historical feedback found.</p>
+    {% endif %}
+</div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="{{ url_for('index') }}" class="btn">Return to Kitchen</a>
+        <a href="{{ url_for('logout') }}" style="margin-left: 20px; color: #e74c3c; text-decoration: none;">Logout</a>
+    </div>
+</div>
+{% endblock %}

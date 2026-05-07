@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Meal Feedback</h2>
+    <p>Thank you for dining with us! Please let us know how we did.</p>
+
+    <form action="{{ url_for('feedback') }}" method="POST" class="feedback-form">
+        <div class="question">
+            <label for="user_name">Your Name:</label><br>
+            <input type="text" id="user_name" name="user_name" required placeholder="Enter your name">
+        </div>
+
+        <div class="question">
+            <label>1. Taste Score (1-10):</label><br>
+            <input type="number" name="q1" min="1" max="10" required>
+        </div>
+
+        <div class="question">
+            <label>2. Salt Level:</label><br>
+            <select name="q2">
+                <option value="low">Low</option>
+                <option value="normal" selected>Normal</option>
+                <option value="high">High</option>
+            </select>
+        </div>
+
+        <div class="question">
+            <label>3. Cooking Consistency:</label><br>
+            <input type="text" name="q3" placeholder="e.g. Perfectly juicy, a bit dry...">
+        </div>
+
+        <div class="question">
+            <label>4. Freshness of Ingredients:</label><br>
+            <input type="radio" name="q5" value="yes" id="f_yes" checked> <label for="f_yes">Fresh</label>
+            <input type="radio" name="q5" value="no" id="f_no"> <label for="f_no">Not Fresh</label>
+        </div>
+
+        <div class="question">
+            <label>5. Any New Requests?</label><br>
+            <textarea name="q7" rows="3" style="width: 100%;" placeholder="Extra cheese next time?"></textarea>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn">Submit Feedback</button>
+        </div>
+    </form>
+{% endblock %}

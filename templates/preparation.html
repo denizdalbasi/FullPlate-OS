@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #e67e22;">Preparation Phase</h2>
+    
+    <div class="status-box" style="background: #fdf2e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <p>Gathering tools: Spatula, Pan, Cutting Board, and Bowl...</p>
+        <p>Checking ingredient stocks...</p>
+    </div>
+
+    <!-- START OF THE SINGLE FORM -->
+    <form method="POST">
+        <!-- Onion Question -->
+        <div class="question" style="margin-bottom: 25px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <p><strong>Chef's Question 1:</strong> Would you like to include <strong>onions</strong>?</p>
+            <input type="radio" id="onion_yes" name="onion" value="yes" checked>
+            <label for="onion_yes">Yes, add onions (Classic Style)</label>
+            <br>
+            <input type="radio" id="onion_no" name="onion" value="no">
+            <label for="onion_no">No onions, please (Light Style)</label>
+        </div>
+
+        <!-- Pepper Question -->
+        <div class="question" style="margin-bottom: 25px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <p><strong>Chef's Question 2:</strong> How about <strong>green peppers</strong>?</p>
+            <input type="radio" id="pepper_yes" name="pepper" value="yes" checked>
+            <label for="pepper_yes">Yes, add peppers (Traditional)</label>
+            <br>
+            <input type="radio" id="pepper_no" name="pepper" value="no">
+            <label for="pepper_no">No peppers (Tomato & Egg only)</label>
+        </div>
+
+        <!-- Bread Question -->
+        <div class="question" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <p><strong>Bread:</strong> Would you like to serve fresh bread on the side? (+$5.00 to price)</p>
+            <input type="radio" id="bread_yes" name="bread" value="yes" checked>
+            <label for="bread_yes">Yes, include bread</label>
+            <br>
+            <input type="radio" id="bread_no" name="bread" value="no">
+            <label for="bread_no">No bread</label>
+        </div>
+
+        <!-- Spices Question -->
+        <div class="question" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <p><strong>Spices:</strong> Pick your signature spice:</p>
+            <select name="spice" style="width: 100%; padding: 8px;">
+                <option value="none">No spice</option>
+                <option value="chili">Red Chili Flakes (Spicy!)</option>
+                <option value="thyme">Thyme (Kekik)</option>
+                <option value="pepper">Black Pepper</option>
+            </select>
+        </div>
+
+        <div class="preparation-steps" style="text-align: left; background: #fffde7; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border-left: 5px solid #f1c40f;">
+            <p><strong>Preparation Checklist:</strong></p>
+            <ul>
+                <li>Cubing Tomatoes (Peeling skin if necessary)</li>
+                <li>Cracking eggs into a separate bowl</li>
+                <li>Preparing spices: Salt, black pepper, and chili flakes</li>
+                <li style="color: #7f8c8d; font-style: italic;">* Selected ingredients will be chopped automatically next.</li>
+            </ul>
+        </div>
+
+        <!-- The Submit Button -->
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; background-color: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Finalize Orders & Cook
+        </button>
+    </form>
+    <!-- END OF THE SINGLE FORM -->
+{% endblock %}
